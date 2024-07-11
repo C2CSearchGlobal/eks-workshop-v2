@@ -9,6 +9,12 @@ spec:
   serviceAccount: adot-collector
   config: |
     receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
       prometheus:
         config:
           global:
@@ -91,6 +97,7 @@ spec:
                   regex: Pending|Succeeded|Failed|Completed
                   action: drop
     exporters:
+      awsxray:
       prometheusremotewrite:
         endpoint: ${AMP_ENDPOINT}api/v1/remote_write
         auth:
@@ -112,3 +119,8 @@ spec:
         metrics:
           receivers: [prometheus]
           exporters: [logging, prometheusremotewrite]
+        traces:
+          receivers:
+            - otlp
+          exporters:
+            - awsxray
