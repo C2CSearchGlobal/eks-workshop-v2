@@ -96,8 +96,13 @@ spec:
                 - source_labels: [__meta_kubernetes_pod_phase]
                   regex: Pending|Succeeded|Failed|Completed
                   action: drop
+    processors:
+      batch/traces:
+        timeout: 1s
+        send_batch_size: 50
     exporters:
       awsxray:
+        region: us-east-2
       prometheusremotewrite:
         endpoint: ${AMP_ENDPOINT}api/v1/remote_write
         auth:
@@ -120,7 +125,6 @@ spec:
           receivers: [prometheus]
           exporters: [logging, prometheusremotewrite]
         traces:
-          receivers:
-            - otlp
-          exporters:
-            - awsxray
+          receivers: [otlp]
+          processors: [batch/traces]
+          exporters: [awsxray]
