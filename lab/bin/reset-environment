@@ -58,7 +58,7 @@ REPOSITORY_REF=${REPOSITORY_REF:-""}
 if [ ! -z "${REPOSITORY_REF}" ]; then
   rm -rf $repository_path
 
-  logmessage "Refreshing copy of workshop repository from GitHub..."
+  logmessage "Refreshing copy of workshop repository from GitHub (https://github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git)..."
 
   git clone --depth=1 --single-branch --branch=${REPOSITORY_REF} --quiet https://github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git $repository_path
   
