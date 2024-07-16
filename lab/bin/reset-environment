@@ -85,7 +85,7 @@ if [ ! -z "$module" ]; then
 fi
 
 logmessage "Resetting the environment..."
-logmessage "Tip: Read the rest of the lab introduction while you wait!"
+#logmessage "Tip: Read the rest of the lab introduction while you wait!"
 
 if [ -f "/eks-workshop/hooks/cleanup.sh" ]; then
   bash /eks-workshop/hooks/cleanup.sh
