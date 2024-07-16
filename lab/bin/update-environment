@@ -84,8 +84,7 @@ if [ ! -z "$module" ]; then
   fi
 fi
 
-logmessage "Resetting the environment..."
-logmessage "Tip: Read the rest of the lab introduction while you wait!"
+logmessage "Updating the environment..."
 
 #if [ -f "/eks-workshop/hooks/cleanup.sh" ]; then
 #  bash /eks-workshop/hooks/cleanup.sh
@@ -127,8 +126,8 @@ logmessage "Cleaning up previous lab infrastructure..."
 
 tf_dir=$(realpath --relative-to="$PWD" '/eks-workshop/terraform')
 
-terraform -chdir="$tf_dir" init -upgrade
-terraform -chdir="$tf_dir" destroy --auto-approve
+#terraform -chdir="$tf_dir" init -upgrade
+#terraform -chdir="$tf_dir" destroy --auto-approve
 
 rm -rf /eks-workshop/hooks
 
