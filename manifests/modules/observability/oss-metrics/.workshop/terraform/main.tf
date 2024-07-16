@@ -3,10 +3,6 @@ resource "random_string" "fluentbit_log_group" {
   special = false
 }
 
-locals {
-  cw_log_group_name = "/${var.addon_context.eks_cluster_id}/worker-fluentbit-logs-${random_string.fluentbit_log_group.result}"
-}
-
 module "aws_for_fluentbit" {
   source = "github.com/aws-ia/terraform-aws-eks-blueprints?ref=v4.32.1//modules/kubernetes-addons/aws-for-fluentbit"
 
@@ -417,74 +413,75 @@ resource "aws_iam_policy" "grafana" {
 }
 
 locals {
+  cw_log_group_name = "/${var.addon_context.eks_cluster_id}/worker-fluentbit-logs-${random_string.fluentbit_log_group.result}"
   grafana_values = <<EOF
-serviceAccount:
-  create: false
-  name: grafana
+  serviceAccount:
+    create: false
+    name: grafana
 
-env:
-  AWS_SDK_LOAD_CONFIG: true
-  GF_AUTH_SIGV4_AUTH_ENABLED: true
+  env:
+    AWS_SDK_LOAD_CONFIG: true
+    GF_AUTH_SIGV4_AUTH_ENABLED: true
 
-ingress:
-  enabled: true
-  hosts: []
-  annotations:
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-  ingressClassName: alb
-
-datasources:
-  datasources.yaml:
-    apiVersion: 1
-    datasources:
-    - name: Prometheus
-      type: prometheus
-      url: ${aws_prometheus_workspace.this.prometheus_endpoint}
-      access: proxy
-      jsonData:
-        httpMethod: "POST"
-        sigV4Auth: true
-        sigV4AuthType: "default"
-        sigV4Region: ${var.addon_context.aws_region_name}
-      isDefault: true
-
-dashboardProviders:
-  dashboardproviders.yaml:
-    apiVersion: 1
-    providers:
-    - name: default
-      orgId: 1
-      folder: ""
-      type: file
-      disableDeletion: false
-      editable: false
-      options:
-        path: /var/lib/grafana/dashboards/default
-    - name: orders-service
-      orgId: 1
-      folder: "retail-app-metrics"
-      type: file
-      disableDeletion: false
-      editable: false
-      options:
-        path: /var/lib/grafana/dashboards/orders-service    
-
-dashboardsConfigMaps:
-  orders-service: "order-service-metrics-dashboard"
-
-dashboards:
-  default:
-    kubernetesCluster:
-      gnetId: 3119
-      revision: 2
-      datasource: Prometheus
-
-sidecar:
-  dashboards:
+  ingress:
     enabled: true
-    searchNamespace: ALL
-    label: app.kubernetes.io/component
-    labelValue: grafana
-EOF
+    hosts: []
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+    ingressClassName: alb
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: ${aws_prometheus_workspace.this.prometheus_endpoint}
+        access: proxy
+        jsonData:
+          httpMethod: "POST"
+          sigV4Auth: true
+          sigV4AuthType: "default"
+          sigV4Region: ${var.addon_context.aws_region_name}
+        isDefault: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: default
+        orgId: 1
+        folder: ""
+        type: file
+        disableDeletion: false
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/default
+      - name: orders-service
+        orgId: 1
+        folder: "retail-app-metrics"
+        type: file
+        disableDeletion: false
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/orders-service    
+
+  dashboardsConfigMaps:
+    orders-service: "order-service-metrics-dashboard"
+
+  dashboards:
+    default:
+      kubernetesCluster:
+        gnetId: 3119
+        revision: 2
+        datasource: Prometheus
+
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+      label: app.kubernetes.io/component
+      labelValue: grafana
+  EOF
 }
