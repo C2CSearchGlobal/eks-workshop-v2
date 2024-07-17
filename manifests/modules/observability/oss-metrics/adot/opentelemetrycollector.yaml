@@ -4,7 +4,7 @@ metadata:
   name: adot
   namespace: other
 spec:
-  image: public.ecr.aws/aws-observability/aws-otel-collector:v0.21.0
+  image: public.ecr.aws/aws-observability/aws-otel-collector:latest
   mode: deployment
   serviceAccount: adot-collector
   config: |

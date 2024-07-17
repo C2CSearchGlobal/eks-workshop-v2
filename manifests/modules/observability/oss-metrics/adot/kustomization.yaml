@@ -6,4 +6,3 @@ resources:
   - clusterrolebinding.yaml
   - serviceaccount.yaml
   - opentelemetrycollector.yaml
-  - nlb.yaml
