@@ -1,5 +1,5 @@
 import { Category, Gatherer, Page, Script } from "./gatherer/gatherer.js";
-import Mocha, { Runner, Suite, Test } from "mocha";
+import Mocha, { Suite, Test } from "mocha";
 import path from "path";
 import GlobToRegExp from "glob-to-regexp";
 import { assert } from "chai";
@@ -58,7 +58,7 @@ export class MarkdownSh {
 
     const mocha = new Mocha(mochaOpts);
 
-    let root;
+    let root: Category | null;
 
     let shell = new DefaultShell(beforeEach);
 
@@ -84,6 +84,7 @@ export class MarkdownSh {
       try {
         await this.runMochaTests(mocha);
       } catch (e: any) {
+        console.log(`Error running tests: ${e.message}`);
         process.exit(1);
       }
     }
@@ -293,9 +294,15 @@ class CustomTest extends Test {
                 {},
               );
             } catch (e: any) {
-              e.message = `Error running test case command at line ${testCase.lineNumber} - ${e.message}`;
+              if (e instanceof ShellError && testCase.expectError) {
+                if (debug) {
+                  console.log("Ignoring expected error");
+                }
+              } else {
+                e.message = `Error running test case command at line ${testCase.lineNumber} - ${e.message}`;
 
-              throw e;
+                throw e;
+              }
             }
 
             await this.hook(testCase, category, "after", hookTimeout, {
@@ -315,13 +322,10 @@ class CustomTest extends Test {
                 `Script failed to complete within ${e.timeout} seconds`,
               );
             } else if (e instanceof ShellError) {
-              if (!testCase.expectError) {
-                console.log(e.message);
-                console.log(`Command returned error code ${e.code}`);
-                console.log(`stdout: \n${e.stdout}`);
-                console.log(`stderr: \n${e.stderr}`);
-                assert.fail("Script exit with an error code");
-              }
+              console.log(e.message);
+              console.log(`Command returned error code ${e.code}`);
+              console.log(`output: \n${e.output}`);
+              assert.fail("Script exit with an error code");
             } else {
               assert.fail(`An unknown error occurred: ${e.message}`);
             }
@@ -331,6 +335,8 @@ class CustomTest extends Test {
         }
       }
     });
+
+    this.file = page.file;
   }
 
   async hook(
